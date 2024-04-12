@@ -14,57 +14,58 @@ class Status:
         self.client: TrainingClient = client
         self.refresh = refresh
         
+    def search(self, search_bar, *args):
+        """
+        Use regex patterns to filter out statuses and update the ui
+        """
+        TrainingInfo.reset_ui_to_display()
+        previous_result: List = []
+        prompt: str = search_bar.model.get_value_as_string()
+        split: List = prompt.split(":")
+        new_split: List = []
+        for part in split:
+            subpart = part.split()
+            for word in subpart:
+                new_split.append(word)
+        
+        if not len(new_split)%2==0:
+            return
+        for key in TrainingInfo.get_keys():            
+            for i in range(0,len(new_split),2): # Jump 2 each time to correctly get key and value from split list
+                
+                search_key_result: str = ""
+                result: str = ""
+                search_key_result = re.findall(f"(?i)({key})", new_split[i]) # Retrieve the corresponding key from the prompt
+                if search_key_result: # If the key exists in the dataframe
+                    new_split[i] = search_key_result[0].lower() # Lower case key in split just for neatness
+                    new_df = TrainingInfo.df.set_index(key)
+                    result = new_df.filter(regex=f"(?=.*{str(new_split[i+1])}).*$",axis=0)
+                    if not result.empty: # If the value exists in the dataframe, append to TrainingInfo.ui_to_display list
+                        current_result: List = []
+                        for _, row in result.iterrows(): # For every training containing eg. gpu_id: 1, update the ui_to_display list
+                            # Check if this condition is already in the entries_to_display list. If it is not, then there are no results that satisfy the conditions in the prompt
+                            if key == "uuid":
+                                uuid = row.name
+                            else:
+                                uuid = row["uuid"]
+                            current_result.append(uuid)
+                        for uuid in current_result:
+                            if len(previous_result)==0:
+                                continue
+                            else:
+                                if uuid not in previous_result:
+                                    previous_result.remove(uuid)
+                        previous_result=current_result
+                                    
+        # Display all trainings that match the search bar criteria
+        for uuid in previous_result:
+            TrainingInfo.append_ui_to_display(uuid)
+        self.refresh()
+
     def build_ui(self):
 
-        def search(*args):
-            """
-            Use regex patterns to filter out statuses and update the ui
-            """
-            TrainingInfo.reset_ui_to_display()
-            previous_result: List = []
-            prompt: str = search_bar.model.get_value_as_string()
-            split: List = prompt.split(":")
-            new_split: List = []
-            for part in split:
-                subpart = part.split()
-                for word in subpart:
-                    new_split.append(word)
+        #def search(*args):
             
-            if not len(new_split)%2==0:
-                return
-            same_key = TrainingInfo.get_keys()[0]
-            for key in TrainingInfo.get_keys():            
-                for i in range(0,len(new_split),2): # Jump 2 each time to correctly get key and value from split list
-                    
-                    search_key_result: str = ""
-                    result: str = ""
-                    search_key_result = re.findall(f"(?i)({key})", new_split[i]) # Retrieve the corresponding key from the prompt
-                    if search_key_result: # If the key exists in the dataframe
-                        new_split[i] = search_key_result[0].lower() # Lower case key in split just for neatness
-                        new_df = TrainingInfo.df.set_index(key)
-                        result = new_df.filter(regex=f"(?=.*{str(new_split[i+1])}).*$",axis=0)
-                        if not result.empty: # If the value exists in the dataframe, append to TrainingInfo.ui_to_display list
-                            current_result: List = []
-                            for _, row in result.iterrows(): # For every training containing eg. gpu_id: 1, update the ui_to_display list
-                                # Check if this condition is already in the entries_to_display list. If it is not, then there are no results that satisfy the conditions in the prompt
-                                if key == "uuid":
-                                    uuid = row.name
-                                else:
-                                    uuid = row["uuid"]
-                                current_result.append(uuid)
-                            for uuid in current_result:
-                                if len(previous_result)==0:
-                                    continue
-                                else:
-                                    if uuid not in previous_result:
-                                        previous_result.remove(uuid)
-                            previous_result=current_result
-                                        
-
-            # Display all trainings that match the search bar criteria
-            for uuid in previous_result:
-                TrainingInfo.append_ui_to_display(uuid)
-            self.refresh()
 
         def delete_logs_popup(uuid: str):
             ok_button = nm.NotificationButtonInfo("YES", on_complete= lambda: stop_training(uuid, True))
@@ -166,7 +167,7 @@ class Status:
             with ui.HStack():
                 ui.Label("Search: ", width=20)
                 search_bar = ui.StringField(tooltip = "Search")
-            ui.Button("Search", clicked_fn=search)
+            ui.Button("Search", clicked_fn=lambda: self.search(search_bar))
             if not TrainingInfo.df.empty:
                 for uuid in TrainingInfo.get_ui_to_display():
                     row = TrainingInfo.df.set_index("uuid").loc[uuid]
