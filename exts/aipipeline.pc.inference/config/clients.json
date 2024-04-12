@@ -1,0 +1,67 @@
+{
+    "api_connectors": {
+        "Default Configuration": {
+            "url": "http://localhost",
+            "port": 4248
+        },
+        "deeplearning09": {
+            "url": "http://localhost",
+            "port": 7000
+        },
+        "hiiii": {
+            "url": "http://localhost",
+            "port": 4248
+        },
+        "marhaba": {
+            "url": "http://localhost",
+            "port": 4248
+        },
+        "djkfgh": {
+            "url": "asjgh",
+            "port": 2345
+        },
+        "test": {
+            "url": "https://localhost",
+            "port": 4248
+        },
+        "test2": {
+            "url": "tshdh",
+            "port": 3453
+        },
+        "jk": {
+            "url": "fgj",
+            "port": 567
+        },
+        "hi": {
+            "url": "reyr",
+            "port": 3456
+        },
+        "yooo": {
+            "url": "reyr",
+            "port": 3456
+        },
+        "ho": {
+            "url": "sdfgd",
+            "port": 2342
+        },
+        "anthony": {
+            "url": "sdfg",
+            "port": 23324
+        }
+    },
+    "endpoints": {
+        "train_endpoint": "training/train",
+        "dataset_endpoint": "dataset/list",
+        "training_config_files_endpoint": "training/list_training_configs",
+        "dataset_config_files_endpoint": "training/list_dataset_configs",
+        "test_endpoint": "training/test",
+        "list_pcd_inference_files_endpoint": "training/list_pcd_inference",
+        "infer_endpoint": "training/infer",
+        "stop_training_endpoint": "training/stop",
+        "rename_training_endpoint": "training/rename",
+        "gpus_endpoint": "training/gpu",
+        "status_endpoint": "training/status",
+        "status_uuid_endpoint": "training/status",
+        "health_endpoint": "health"
+    }
+}
